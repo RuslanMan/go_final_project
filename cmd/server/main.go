@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"go_final_project/pkg/api"
 	"go_final_project/pkg/db"
 )
 
@@ -15,21 +16,23 @@ func main() {
 		port = "7540"
 	}
 
-	// Получаем путь к файлу БД из переменной окружения
-	// или используем значение по умолчанию
+	// Получаем путь к файлу БД
 	dbFile := os.Getenv("TODO_DBFILE")
 	if dbFile == "" {
 		dbFile = "scheduler.db"
 	}
 
-	// ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ
-	// Проверяем существование файла, создаем таблицу если нужно
+	// Инициализация базы данных
 	if err := db.Init(dbFile); err != nil {
 		log.Fatalf("Ошибка инициализации базы данных: %v", err)
 	}
-	defer db.Close() // Закрываем соединение при завершении программы
+	defer db.Close()
 
 	log.Printf("База данных инициализирована: %s", dbFile)
+
+	// ИНИЦИАЛИЗАЦИЯ API ОБРАБОТЧИКОВ
+	api.Init()
+	log.Println("API обработчики зарегистрированы")
 
 	// Директория с веб-файлами
 	webDir := "./web"
