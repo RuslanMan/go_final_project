@@ -9,7 +9,6 @@ import (
 )
 
 // taskHandler - главный обработчик для /api/task
-// Перенаправляет запросы в зависимости от HTTP метода
 func taskHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -26,56 +25,93 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // addTaskHandler - POST /api/task
-// Создает новую задачу
 func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task db.Task
 
-	// 1. Декодируем JSON из тела запроса
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 		writeJSON(w, map[string]string{"error": "некорректный JSON"})
 		return
 	}
 
-	// 2. Проверяем обязательное поле title
 	if task.Title == "" {
 		writeJSON(w, map[string]string{"error": "не указан заголовок задачи"})
 		return
 	}
 
-	// 3. Проверяем и корректируем дату
 	if err := validateAndFixDate(&task); err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return
 	}
 
-	// 4. Добавляем задачу в БД
 	id, err := db.AddTask(&task)
 	if err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return
 	}
 
-	// 5. Возвращаем ID созданной задачи
 	writeJSON(w, map[string]string{"id": fmt.Sprintf("%d", id)})
 }
 
 // getTaskHandler - GET /api/task?id=...
-// Получает задачу по ID (будет реализован на шаге 6)
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
-	// Временная заглушка
-	writeJSON(w, map[string]string{"error": "метод GET еще не реализован"})
+	// Получаем ID из параметров запроса
+	id := r.FormValue("id")
+	if id == "" {
+		writeJSON(w, map[string]string{"error": "не указан идентификатор"})
+		return
+	}
+
+	// Получаем задачу из БД
+	task, err := db.GetTask(id)
+	if err != nil {
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Возвращаем задачу
+	writeJSON(w, task)
 }
 
 // updateTaskHandler - PUT /api/task
-// Обновляет существующую задачу (будет реализован на шаге 6)
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
-	// Временная заглушка
-	writeJSON(w, map[string]string{"error": "метод PUT еще не реализован"})
+	var task db.Task
+
+	// Декодируем JSON из тела запроса
+	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+		writeJSON(w, map[string]string{"error": "некорректный JSON"})
+		return
+	}
+
+	// Проверяем наличие ID
+	if task.ID == "" {
+		writeJSON(w, map[string]string{"error": "не указан идентификатор"})
+		return
+	}
+
+	// Проверяем обязательное поле title
+	if task.Title == "" {
+		writeJSON(w, map[string]string{"error": "не указан заголовок задачи"})
+		return
+	}
+
+	// Проверяем и корректируем дату
+	if err := validateAndFixDate(&task); err != nil {
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Обновляем задачу в БД
+	if err := db.UpdateTask(&task); err != nil {
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Возвращаем пустой JSON при успехе
+	writeJSON(w, map[string]string{})
 }
 
 // deleteTaskHandler - DELETE /api/task?id=...
-// Удаляет задачу по ID (будет реализован на шаге 7)
 func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
-	// Временная заглушка
+	// Временная заглушка (будет реализована на шаге 7)
 	writeJSON(w, map[string]string{"error": "метод DELETE еще не реализован"})
 }

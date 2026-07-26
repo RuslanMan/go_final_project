@@ -15,7 +15,6 @@ type Task struct {
 }
 
 // AddTask добавляет задачу в базу данных
-// Возвращает ID добавленной задачи
 func AddTask(task *Task) (int64, error) {
 	query := `INSERT INTO scheduler (date, title, comment, repeat) 
 	          VALUES (?, ?, ?, ?)`
@@ -25,31 +24,7 @@ func AddTask(task *Task) (int64, error) {
 		return 0, err
 	}
 
-	// Получаем ID добавленной записи
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return id, nil
-}
-
-// GetTask возвращает задачу по ID
-func GetTask(id string) (*Task, error) {
-	query := `SELECT id, date, title, comment, repeat 
-	          FROM scheduler 
-	          WHERE id = ?`
-
-	task := &Task{}
-	err := DB.QueryRow(query, id).Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
-	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("задача не найдена")
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return task, nil
+	return result.LastInsertId()
 }
 
 // Tasks возвращает список задач с ограничением по количеству
@@ -76,6 +51,24 @@ func Tasks(limit int) ([]*Task, error) {
 	}
 
 	return tasks, nil
+}
+
+// GetTask возвращает задачу по ID
+func GetTask(id string) (*Task, error) {
+	query := `SELECT id, date, title, comment, repeat 
+	          FROM scheduler 
+	          WHERE id = ?`
+
+	task := &Task{}
+	err := DB.QueryRow(query, id).Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("задача не найдена")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }
 
 // UpdateTask обновляет задачу
