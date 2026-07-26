@@ -54,21 +54,18 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 // getTaskHandler - GET /api/task?id=...
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
-	// Получаем ID из параметров запроса
 	id := r.FormValue("id")
 	if id == "" {
 		writeJSON(w, map[string]string{"error": "не указан идентификатор"})
 		return
 	}
 
-	// Получаем задачу из БД
 	task, err := db.GetTask(id)
 	if err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return
 	}
 
-	// Возвращаем задачу
 	writeJSON(w, task)
 }
 
@@ -76,42 +73,49 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task db.Task
 
-	// Декодируем JSON из тела запроса
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 		writeJSON(w, map[string]string{"error": "некорректный JSON"})
 		return
 	}
 
-	// Проверяем наличие ID
 	if task.ID == "" {
 		writeJSON(w, map[string]string{"error": "не указан идентификатор"})
 		return
 	}
 
-	// Проверяем обязательное поле title
 	if task.Title == "" {
 		writeJSON(w, map[string]string{"error": "не указан заголовок задачи"})
 		return
 	}
 
-	// Проверяем и корректируем дату
 	if err := validateAndFixDate(&task); err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return
 	}
 
-	// Обновляем задачу в БД
 	if err := db.UpdateTask(&task); err != nil {
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, map[string]string{})
+}
+
+// deleteTaskHandler - DELETE /api/task?id=...
+func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	// Получаем ID из параметров запроса
+	id := r.FormValue("id")
+	if id == "" {
+		writeJSON(w, map[string]string{"error": "не указан идентификатор"})
+		return
+	}
+
+	// Удаляем задачу из БД
+	if err := db.DeleteTask(id); err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return
 	}
 
 	// Возвращаем пустой JSON при успехе
 	writeJSON(w, map[string]string{})
-}
-
-// deleteTaskHandler - DELETE /api/task?id=...
-func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
-	// Временная заглушка (будет реализована на шаге 7)
-	writeJSON(w, map[string]string{"error": "метод DELETE еще не реализован"})
 }
