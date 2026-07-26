@@ -12,7 +12,6 @@ func Init() {
 	// Обработчик для /api/task (POST, GET, PUT, DELETE)
 	http.HandleFunc("/api/task", taskHandler)
 
-	// Здесь позже добавим /api/tasks и /api/task/done
-	// http.HandleFunc("/api/tasks", tasksHandler)
-	// http.HandleFunc("/api/task/done", doneHandler)
+	// Обработчик для /api/tasks (GET) - получаем список задач
+	http.HandleFunc("/api/tasks", tasksHandler)
 }
