@@ -6,10 +6,13 @@ import (
 
 // Init регистрирует все API обработчики
 func Init() {
-	// Регистрируем обработчик для /api/nextdate
+	// Обработчик для /api/nextdate
 	http.HandleFunc("/api/nextdate", nextDateHandler)
 
-	// Здесь позже будут добавлены другие обработчики:
-	// http.HandleFunc("/api/task", taskHandler)
+	// Обработчик для /api/task (POST, GET, PUT, DELETE)
+	http.HandleFunc("/api/task", taskHandler)
+
+	// Здесь позже добавим /api/tasks и /api/task/done
 	// http.HandleFunc("/api/tasks", tasksHandler)
+	// http.HandleFunc("/api/task/done", doneHandler)
 }
