@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -10,11 +11,23 @@ import (
 )
 
 // writeJSON - вспомогательная функция для отправки JSON ответов
-func writeJSON(w http.ResponseWriter, data interface{}) {
+func writeJSON(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Ошибка кодирования JSON: %v", err)
+		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
 	}
+}
+
+// writeError - вспомогательная функция для отправки ошибок
+func writeError(w http.ResponseWriter, message string, statusCode int) {
+	writeJSON(w, map[string]string{"error": message}, statusCode)
+}
+
+// writeInternalError - возвращает стандартную ошибку для внутренних проблем
+func writeInternalError(w http.ResponseWriter) {
+	writeError(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
 }
 
 // validateAndFixDate - проверяет и корректирует дату задачи
@@ -32,7 +45,7 @@ func validateAndFixDate(task *db.Task) error {
 	// Проверяем корректность даты
 	date, err := time.Parse(dateFormat, task.Date)
 	if err != nil {
-		return fmt.Errorf("некорректный формат даты: %v", err)
+		return fmt.Errorf("некорректный формат даты: %w", err)
 	}
 
 	// Если есть правило повторения

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"go_final_project/pkg/db"
@@ -23,7 +24,8 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	// Получаем задачи из БД (максимум 50)
 	tasks, err := db.Tasks(50)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": err.Error()})
+		log.Printf("Ошибка получения списка задач: %v", err)
+		writeInternalError(w)
 		return
 	}
 
@@ -32,8 +34,5 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 		tasks = make([]*db.Task, 0)
 	}
 
-	// Возвращаем список
-	writeJSON(w, TasksResp{
-		Tasks: tasks,
-	})
+	writeJSON(w, TasksResp{Tasks: tasks}, http.StatusOK)
 }

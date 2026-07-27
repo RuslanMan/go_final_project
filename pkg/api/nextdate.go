@@ -26,7 +26,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
 	date, err := time.Parse(dateFormat, dstart)
 	if err != nil {
-		return "", fmt.Errorf("некорректная дата: %v", err)
+		return "", fmt.Errorf("некорректная дата: %w", err)
 	}
 
 	parts := strings.Split(repeat, " ")
@@ -44,7 +44,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
 		interval, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return "", fmt.Errorf("неверный интервал для d: %v", err)
+			return "", fmt.Errorf("неверный интервал для d: %w", err)
 		}
 
 		if interval <= 0 {
@@ -119,5 +119,6 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(next))
 }
